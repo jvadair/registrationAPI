@@ -40,7 +40,7 @@ def find_user(identifier: str):
 
 def is_email(identifier):
     try:
-        username = domain = identifier.split('@')[0]
+        username = identifier.split('@')[0]
         domain = identifier.split('@')[1]  # Emails can only have 1 @ symbol
     except IndexError:
         return False
@@ -153,11 +153,14 @@ class API:
         })
 
         # Create personal data file for user
-        new_user = Node({
-            "email": user.email(),
-            "username": user.username(),
-            "crtime": datetime.now()  # Set crtime to verification time
-        }).save(f"db/users/{user_id}.pyn")
+        new_user = Node(
+            {
+                "email": user.email(),
+                "username": user.username(),
+                "crtime": datetime.now()  # Set crtime to verification time
+            },
+            password=user.password()
+        ).save(f"db/users/{user_id}.pyn")
 
         # Remove user from unverified
         unverified.delete(user_id)
