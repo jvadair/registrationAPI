@@ -1,8 +1,8 @@
 from typing import Any
 from pyntree import Node
+from pickle import UnpicklingError
 from uuid import uuid4
 from datetime import datetime
-from cryptography.fernet import InvalidToken
 from flask import redirect as _redirect
 
 # Init database accessors
@@ -119,8 +119,8 @@ class API:
 
         # Verify password
         try:
-            Node(f'db/users/{user_id}.pyn')
-        except InvalidToken:
+            Node(f'db/users/{user_id}.pyn', password=password)
+        except UnpicklingError:
             return f'Invalid password', 401  # Unauthorized
 
         # Log in
