@@ -4,10 +4,15 @@ from pickle import UnpicklingError
 from uuid import uuid4
 from datetime import datetime
 from flask import redirect as _redirect
+from os import getenv
 
 # Init database accessors
 verified = Node('db/users/_map.pyn', autosave=True)
 unverified = Node('db/users/_map-unverified.pyn', autosave=True)
+socials = Node('db/users/_map-social.pyn', autosave=True)  # social db format: {'platform': {'social_name': 'id', ...}}
+
+# Handle server-side encryption
+ENCRYPTION_KEY = getenv("RAPI_AUTHKEY")
 
 
 # Helper functions
@@ -118,9 +123,8 @@ class API:
             return f'User not found: {identifier}', 404  # Not found
 
         # Verify password
-        try:
-            Node(f'db/users/{user_id}.pyn', password=password)
-        except UnpicklingError:
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        if user_db.password() != password:
             return f'Invalid password', 401  # Unauthorized
 
         # Log in
@@ -157,10 +161,20 @@ class API:
             {
                 "email": user.email(),
                 "username": user.username(),
-                "crtime": datetime.now()  # Set crtime to verification time
-            },
-            password=user.password()
+                "crtime": datetime.now(),  # Set crtime to verification time
+                "password": user.password()
+            }
         ).save(f"db/users/{user_id}.pyn")
 
         # Remove user from unverified
         unverified.delete(user_id)
+
+    def handle_social_login(username, platform, session):
+        """
+        Logs in social users to their associated accounts, or creates new ones for them
+        Example OAuth response:
+        {'access_token': '[redacted]', 'token_type': 'Bearer', 'expires_in': 3600, 'refresh_token': '[redacted]', 'user_id': 'jvadair', 'expires_at': 1684416088}
+        """
+        if socials.get(platform).has(username):
+            user_id = socials.get(platform).get(username)()
+            session['id'] = user_id
