@@ -157,7 +157,7 @@ class API:
         })
 
         # Create personal data file for user
-        new_user = Node(
+        Node(
             {
                 "email": user.email(),
                 "username": user.username(),
@@ -169,7 +169,9 @@ class API:
         # Remove user from unverified
         unverified.delete(user_id)
 
-    def handle_social_login(username, platform, session):
+        return user_id
+
+    def handle_social_login(self, username, platform, session):
         """
         Logs in social users to their associated accounts, or creates new ones for them
         Example OAuth response:
@@ -178,3 +180,7 @@ class API:
         if socials.get(platform).has(username):
             user_id = socials.get(platform).get(username)()
             session['id'] = user_id
+        else:
+            user_id = self.verify(self.register(platform + ':' + username, '', password=str(uuid4())))
+            socials.get(platform).set(username, user_id)
+            # No email or verification for OAuth accounts; random password
