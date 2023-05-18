@@ -177,6 +177,9 @@ class API:
         Example OAuth response:
         {'access_token': '[redacted]', 'token_type': 'Bearer', 'expires_in': 3600, 'refresh_token': '[redacted]', 'user_id': 'jvadair', 'expires_at': 1684416088}
         """
+        if not socials.has(platform):
+            socials.set(platform, {})
+
         if socials.get(platform).has(username):
             user_id = socials.get(platform).get(username)()
             session['id'] = user_id
