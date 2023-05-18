@@ -183,6 +183,8 @@ class API:
         if socials.get(platform).has(username):
             user_id = socials.get(platform).get(username)()
             session['id'] = user_id  # Log in
+            session['social_platform'] = platform
+            session['social_id'] = username
         else:
             verification_token = self.register(platform + ':' + username, email=f"{str(uuid4())}@example.notarealtld", password=str(uuid4()))
             user_id = self.verify(verification_token)
