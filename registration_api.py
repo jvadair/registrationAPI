@@ -185,7 +185,6 @@ class API:
             session['id'] = user_id
         else:
             verification_token = self.register(platform + ':' + username, email=f"{str(uuid4)}@example.notarealtld", password=str(uuid4()))
-            print(verification_token)
             user_id = self.verify(verification_token)
             socials.get(platform).set(username, user_id)
             # No email (but random uuid since it can't be blank) or verification for OAuth accounts; random password
