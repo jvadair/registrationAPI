@@ -190,3 +190,6 @@ class API:
             user_id = self.verify(verification_token)
             socials.get(platform).set(username, user_id)
             # No email (but random uuid since it can't be blank) or verification for OAuth accounts; random password
+            session['id'] = user_id  # Log in
+            session['social_platform'] = platform
+            session['social_id'] = username
