@@ -2,8 +2,8 @@
 A modular user registration and login API designed for Flask because I got tired of writing new ones
 
 ## Example usage
-```python
-import registration_api
+```pythonfro
+from registrationAPI import registration_api
 
 
 x = registration_api.API()
