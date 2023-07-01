@@ -137,10 +137,11 @@ class API:
             return 'Please fill out all required information.', 400  # Bad request
 
         # Identifier to UUID
-        user_id = find_user(identifier)._name
-        if user_id is None:
+        user = find_user(identifier)._name
+        if user is None:
             return f'User not found: {identifier}', 404  # Not found
-
+        else:
+            user_id = user.id()
         # Verify password
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
         if user_db.password() != password:
