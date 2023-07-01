@@ -137,7 +137,7 @@ class API:
             return 'Please fill out all required information.', 400  # Bad request
 
         # Identifier to UUID
-        user = find_user(identifier)._name
+        user = find_user(identifier)
         if user is None:
             return f'User not found: {identifier}', 404  # Not found
         else:
