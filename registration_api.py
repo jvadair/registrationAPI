@@ -141,7 +141,7 @@ class API:
         if user is None:
             return f'User not found: {identifier}', 404  # Not found
         else:
-            user_id = user.id()
+            user_id = user._name
         # Verify password
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
         if user_db.password() != password:
