@@ -106,6 +106,7 @@ class API:
         if verified.where(email=email) or unverified.where(email=email):  # Hopefully both are empty lists
             return 'That email is already taken.', 401  # Unauthorized
 
+        # Ensure username is not taken
         if verified.where(username=username) or unverified.where(username=username):  # Hopefully both are empty lists
             return 'That username is already taken.', 401  # Unauthorized
 
