@@ -13,3 +13,14 @@ x.verify(token)
 session = {}  # <-- Use flask's session object, this is for demonstration
 resp = x.login(session, "jvadair", "password")  # Will return a redirect or error message
 ```
+
+## Prerequisites
+For email verification:
+1. You must create templates/email/verify.html in Jinja format for your application. It can utilize one variable: `token`.
+2. You must set the following parameters in the config.json file for your application:
+```
+SMTP_EMAIL:    str
+SMTP_ENVPASS:  str  (the name of the environment variable holding the password)
+SMTP_SERVER:   str
+SMTP_PORT:     int
+```
