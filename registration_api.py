@@ -7,6 +7,7 @@ from datetime import datetime
 from flask import redirect as _redirect
 from os import getenv, path, mkdir
 import string
+from registrationAPI import sendmail
 
 USERNAME_ALLOWED = string.ascii_letters + string.digits + "_-"
 
@@ -69,7 +70,8 @@ def is_email(identifier):
 
 
 def send_verification_link(email):  # To be implemented in the future
-    pass
+    user = find_user(email)
+    sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
 
 
 class API:
@@ -78,7 +80,7 @@ class API:
 
     # Authentication
 
-    def register(self, username: str, email: str, password: str, redirect='/verify', validate_username: bool = True) -> Any:
+    def register(self, username: str, email: str, password: str, redirect='/verify', validate_username: bool = True, send_email=True) -> Any:
         """
         :param redirect: Where to redirect the user after successful registration
         :param username:
@@ -122,13 +124,16 @@ class API:
         user.token = str(uuid4())  # Verification token
         user.crtime = datetime.now()
 
-        send_verification_link(email)
+        if send_email:
+            send_verification_link(email)
 
         return user.token()
 
-    def login(self, session, identifier, password, redirect='/') -> Any:
+    def login(self, session, identifier, password, redirect='/', finduser=True) -> Any:
         """
-        :param identifier: The user's email or username + tag
+        :param finduser: Whether to use email/password (True) or user id (False)
+        :param redirect:
+        :param identifier: The user's email or username + tag, or their user ID if finduser = False
         :param password:
         :return:
         """
@@ -138,7 +143,13 @@ class API:
             return 'Please fill out all required information.', 400  # Bad request
 
         # Identifier to UUID
-        user = find_user(identifier)
+        if finduser:
+            user = find_user(identifier)
+        else:
+            try:
+                user = verified.get(identifier)
+            except AttributeError:
+                user = None
         if user is None:
             return f'User not found: {identifier}', 404  # Not found
         else:
@@ -186,7 +197,11 @@ class API:
                 "password": user.password(),
                 "id": user_id
             }
-        ).save(f"db/users/{user_id}.pyn")
+        ).save(
+            f"db/users/{user_id}.pyn",
+            password=ENCRYPTION_KEY
+        )
+        from pyntree import file
 
         # Remove user from unverified
         unverified.delete(user_id)
