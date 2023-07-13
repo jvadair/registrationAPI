@@ -21,7 +21,7 @@ def send_template(template_path, subject, *recipients, **kwargs):
     bcc = True if len(recipients) > 1 else False
     message = MIMEMultipart("alternative")
 
-    message["Subject"] = "Email Verification"
+    message["Subject"] = subject
     message["From"] = settings.SMTP_EMAIL()
     if not bcc:
         print(recipients)
