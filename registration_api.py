@@ -246,7 +246,6 @@ class API:
             self.logout(session)
         # Remove social login ties, if any. Must be done before deleting user data.
         user_db = Node(f'db/users/{user_id}.pyn')
-        print(user_db)
         if user_db.has('social_id'):
             socials.get(user_db.social_platform()).delete(user_db.social_id())
             socials.save()
