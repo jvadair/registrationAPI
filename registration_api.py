@@ -11,7 +11,7 @@ from registrationAPI import sendmail
 
 USERNAME_ALLOWED = string.ascii_letters + string.digits + "_-"
 
-# Create needed folders if they don't exist
+# Create needed folders and files if they don't exist
 for d in ('db', 'db/users', 'db/groups', 'db/orgs'):
     if not path.isdir(d):
         mkdir(d)
