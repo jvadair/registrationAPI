@@ -226,7 +226,7 @@ class API:
             verification_token = self.register(platform + ':' + username, email=f"{str(uuid4())}@website.tld", password=str(uuid4()), validate_username=False)
             user_id = self.verify(verification_token)
             socials.get(platform).set(username, user_id)
-            user_db = Node(f'db/users/{user_id}.pyn')
+            user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
             user_db.social_platform = platform
             user_db.social_id = username
             user_db.save()
@@ -245,7 +245,7 @@ class API:
         if session:
             self.logout(session)
         # Remove social login ties, if any. Must be done before deleting user data.
-        user_db = Node(f'db/users/{user_id}.pyn')
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
         if user_db.has('social_id'):
             socials.get(user_db.social_platform()).delete(user_db.social_id())
             socials.save()
