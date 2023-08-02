@@ -211,8 +211,11 @@ class API:
     def handle_social_login(self, username, platform, session):
         """
         Logs in social users to their associated accounts, or creates new ones for them
+
         Example OAuth response:
         {'access_token': '[redacted]', 'token_type': 'Bearer', 'expires_in': 3600, 'refresh_token': '[redacted]', 'user_id': 'jvadair', 'expires_at': 1684416088}
+
+        :return: Whether an account was created
         """
         if not socials.has(platform):
             socials.set(platform, {})
@@ -222,6 +225,7 @@ class API:
             session['id'] = user_id  # Log in
             session['social_platform'] = platform
             session['social_id'] = username
+            return False
         else:
             verification_token = self.register(platform + ':' + username, email=f"{str(uuid4())}@website.tld", password=str(uuid4()), validate_username=False)
             user_id = self.verify(verification_token)
@@ -234,6 +238,7 @@ class API:
             session['id'] = user_id  # Log in
             session['social_platform'] = platform
             session['social_id'] = username
+            return True
 
     def delete_account(self, user_id: str, session: dict = None) -> None:
         """
