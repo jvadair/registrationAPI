@@ -261,13 +261,16 @@ class API:
         """
         :param user_id: The local ID of the user
         :param social_platform: The associated platform
-        :return:
+        :return: Whether the unlinking operation was successful
         """
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        if not user_db.socials.has(social_platform):
+            return False
         social_name = user_db.socials.get(social_platform)()
         socials.get(social_platform).delete(social_name)
         user_db.socials.delete(social_platform)
         user_db.save()
+        return True
 
     def delete_account(self, user_id: str, session: dict = None) -> None:
         """
