@@ -81,7 +81,8 @@ class API:
 
     # Authentication
 
-    def register(self, username: str, email: str, password: str, redirect='/verify', validate_username: bool = True, send_email=True) -> Any:
+    def register(self, username: str, email: str, password: str, redirect='/verify', validate_username: bool = True,
+                 send_email=True) -> Any:
         """
         :param redirect: Where to redirect the user after successful registration
         :param username:
@@ -231,7 +232,8 @@ class API:
             session['social_id'] = username
             return False
         else:
-            verification_token = self.register(platform + ':' + username, email=f"{str(uuid4())}@website.tld", password=str(uuid4()), validate_username=False)
+            verification_token = self.register(platform + ':' + username, email=f"{str(uuid4())}@website.tld",
+                                               password=str(uuid4()), validate_username=False)
             user_id = self.verify(verification_token)
             self.link_social_account(user_id, username, platform)
             # No email (but random uuid since it can't be blank) or verification for OAuth accounts; random password
@@ -241,12 +243,26 @@ class API:
             return True
 
     def link_social_account(self, user_id, social_name, social_platform):
-        socials.get(social_platform).set(social_name, user_id)
+        """
+        :param user_id: The local ID of the user
+        :param social_name: The social ID of the user
+        :param social_platform: The platform used to connect
+        :return: Whether the linking operation was successful. If False, the user has already linked that platform or the social account is in use by another account.
+        """
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        if user_db.socials.has(social_platform) or socials.get(social_platform).has(social_name):
+            return False
         user_db.socials.set(social_platform, social_name)
         user_db.save()
+        socials.get(social_platform).set(social_name, user_id)
+        return True
 
     def unlink_social_account(self, user_id, social_platform):
+        """
+        :param user_id: The local ID of the user
+        :param social_platform: The associated platform
+        :return:
+        """
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
         social_name = user_db.socials.get(social_platform)()
         socials.get(social_platform).delete(social_name)
