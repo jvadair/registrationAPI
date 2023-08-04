@@ -196,7 +196,10 @@ class API:
                 "username": user.username(),
                 "crtime": datetime.now(),  # Set crtime to verification time
                 "password": user.password(),
-                "id": user_id
+                "id": user_id,
+                "socials": {},
+                "groups": [],
+                "orgs": [],
             }
         ).save(
             f"db/users/{user_id}.pyn",
