@@ -246,9 +246,10 @@ class API:
         user_db.socials.set(social_platform, social_name)
         user_db.save()
 
-    def unlink_social_account(self, user_id, social_name, social_platform):
-        socials.get(social_platform).delete(social_name)
+    def unlink_social_account(self, user_id, social_platform):
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        social_name = user_db.socials.get(social_platform)()
+        socials.get(social_platform).delete(social_name)
         user_db.socials.delete(social_platform)
         user_db.save()
 
