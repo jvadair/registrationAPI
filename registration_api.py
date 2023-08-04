@@ -71,7 +71,7 @@ def is_email(identifier):
 
 def send_verification_link(email):
     user = find_user(email)
-    if not user.email.endswith('@website.tld'):  # Do not email the fake emails given to OAuth accounts
+    if not user.email().endswith('@website.tld'):  # Do not email the fake emails given to OAuth accounts
         sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
 
 
