@@ -69,9 +69,10 @@ def is_email(identifier):
     return True
 
 
-def send_verification_link(email):  # To be implemented in the future
+def send_verification_link(email):
     user = find_user(email)
-    sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
+    if not user.email.endswith('@website.tld'):  # Do not email the fake emails given to OAuth accounts
+        sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
 
 
 class API:
@@ -229,16 +230,24 @@ class API:
         else:
             verification_token = self.register(platform + ':' + username, email=f"{str(uuid4())}@website.tld", password=str(uuid4()), validate_username=False)
             user_id = self.verify(verification_token)
-            socials.get(platform).set(username, user_id)
-            user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
-            user_db.social_platform = platform
-            user_db.social_id = username
-            user_db.save()
+            self.link_social_account(user_id, username, platform)
             # No email (but random uuid since it can't be blank) or verification for OAuth accounts; random password
             session['id'] = user_id  # Log in
             session['social_platform'] = platform
             session['social_id'] = username
             return True
+
+    def link_social_account(self, user_id, social_name, social_platform):
+        socials.get(social_platform).set(social_name, user_id)
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        user_db.socials.set(social_platform, social_name)
+        user_db.save()
+
+    def unlink_social_account(self, user_id, social_name, social_platform):
+        socials.get(social_platform).delete(social_name)
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        user_db.socials.delete(social_platform)
+        user_db.save()
 
     def delete_account(self, user_id: str, session: dict = None) -> None:
         """
