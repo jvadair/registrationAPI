@@ -249,10 +249,10 @@ class API:
         :param social_platform: The platform used to connect
         :return: Whether the linking operation was successful. If False, the user has already linked that platform or the social account is in use by another account.
         """
+        if not socials.has(social_platform):
+            socials.set(social_platform, {})
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
-        if user_db.socials.has(social_platform):
-            return False
-        if socials.has(social_platform) and socials.get(social_platform).has(social_name):  # Not combined to the previous statement with 'or' because the social network may not exist yet in the db.
+        if user_db.socials.has(social_platform) or socials.get(social_platform).has(social_name):
             return False
         user_db.socials.set(social_platform, social_name)
         user_db.save()
