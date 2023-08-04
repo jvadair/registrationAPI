@@ -252,7 +252,7 @@ class API:
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
         if user_db.socials.has(social_platform):
             return False
-        if socials.get(social_platform) and socials.get(social_platform).has(social_name):  # Not combined to the previous statement with 'or' because the social network may not exist yet in the db.
+        if socials.has(social_platform) and socials.get(social_platform).has(social_name):  # Not combined to the previous statement with 'or' because the social network may not exist yet in the db.
             return False
         user_db.socials.set(social_platform, social_name)
         user_db.save()
