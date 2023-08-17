@@ -206,7 +206,6 @@ class API:
             f"db/users/{user_id}.pyn",
             password=ENCRYPTION_KEY
         )
-        from pyntree import file
 
         # Remove user from unverified
         unverified.delete(user_id)
@@ -287,13 +286,10 @@ class API:
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
         if user_db.has('social_id'):
             socials.get(user_db.social_platform()).delete(user_db.social_id())
-            socials.save()
         os.remove(f'db/users/{user_id}.pyn')  # Remove user data file
         verified.delete(user_id)  # Remove user from account map
-        verified.save()
 
     # Group management functions
-
     def create_group(self, owner_id: str, name: str) -> str:
         """
         Creates a new group
