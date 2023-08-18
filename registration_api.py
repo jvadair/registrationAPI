@@ -261,6 +261,7 @@ class API:
                 "user_id": user_id,
                 "email_change": True,
                 "token": token,
+                "crtime": datetime.now(),
             })
             send_verification_link(new_email, email_change=user_id)
             return token
