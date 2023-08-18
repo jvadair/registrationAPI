@@ -69,10 +69,20 @@ def is_email(identifier):
     return True
 
 
-def send_verification_link(email):
-    user = find_user(email)
-    if not user.email().endswith('@website.tld'):  # Do not email the fake emails given to OAuth accounts
-        sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
+def send_verification_link(email, email_change=None):
+    """
+    :param email: The email to send the link to
+    :param email_change: Provide with user ID to send the user an email change verification
+    :return:
+    """
+    if email_change:
+        user_db = Node(f'db/users/{email_change}.pyn', password=ENCRYPTION_KEY)
+        sendmail.send_template('email/verify.html', 'Verify your new HashCards email', user_db.pending_email(),
+                               token=user_db.pending_email_token())
+    else:
+        user = find_user(email)
+        if not user.email().endswith('@website.tld'):  # Do not email the fake emails given to OAuth accounts
+            sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
 
 
 class API:
@@ -183,6 +193,18 @@ class API:
         except IndexError:
             return f'No user found. Maybe you already verified your email?', 404  # Not found
 
+        if user.has('email_change'):
+            user_id = user.user_id()
+            user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+            user_db.email = user_db.pending_email()
+            user_db.delete('pending_email_token')
+            user_db.delete('pending_email')
+            user_db.save()
+            user_info = verified.get(user_id)
+            user_info.email = user_db.email()
+            user.delete()
+            return _redirect('/account?updated=True')
+
         # Register username and email with ID
         user_id = user._name
         verified.set(user_id, {
@@ -211,6 +233,28 @@ class API:
         unverified.delete(user_id)
 
         return user_id
+
+    def change_email(self, user_id, new_email, require_verification=True):
+        # Ensure email is not taken
+        if verified.where(email=new_email) or unverified.where(email=new_email):  # Hopefully both are empty lists
+            return 'That email is already taken.', 401  # Unauthorized
+
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        if require_verification:
+            token = str(uuid4())
+            user_db.pending_email = new_email
+            user_db.pending_email_token = token
+            user_db.save()
+            unverified.set(token, {
+                "user_id": user_id,
+                "email_change": True,
+                "token": token,
+            })
+            send_verification_link(new_email, email_change=user_id)
+            return token
+        else:
+            user_db.email = new_email
+            return None
 
     def handle_social_login(self, username, platform, session):
         """
