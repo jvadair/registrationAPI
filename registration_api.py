@@ -256,6 +256,17 @@ class API:
             user_db.email = new_email
             return None
 
+    def change_username(self, user_id, new_username):
+        # Ensure email is not taken
+        if verified.where(usernam=new_username) or unverified.where(username=new_username):  # Hopefully both are empty lists
+            return 'That username is already taken.', 401  # Unauthorized
+
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        user_db.username = new_username
+        user_db.save()
+        user_info = verified.get(user_id)
+        user_info.username = new_username
+
     def handle_social_login(self, username, platform, session):
         """
         Logs in social users to their associated accounts, or creates new ones for them
