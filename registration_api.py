@@ -3,7 +3,7 @@ from typing import Any
 from pyntree import Node
 from pickle import UnpicklingError
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import redirect as _redirect
 from os import getenv, path, mkdir
 import string
@@ -83,6 +83,18 @@ def send_verification_link(email, email_change=None):
         user = find_user(email)
         if not user.email().endswith('@website.tld'):  # Do not email the fake emails given to OAuth accounts
             sendmail.send_template('email/verify.html', 'Verify your HashCards account', user.email(), token=user.token())
+
+
+def clear_unverified_accounts(age=0):
+    """
+    :param age: How long the entry has existed, in minutes
+    :return:
+    """
+    for user in unverified._values:
+        user_info = unverified.get(user)
+        if user_info.has('crtime'):
+            if datetime.now() - timedelta(minutes=age) >= user_info.crtime():
+                unverified.delete(user)
 
 
 class API:
