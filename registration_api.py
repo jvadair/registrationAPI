@@ -283,6 +283,14 @@ class API:
         user_info = verified.get(user_id)
         user_info.username = new_username
 
+    def change_password(self, user_id, new_password):
+        if not new_password:
+            return 'A password was not provided.', 400
+
+        user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
+        user_db.password = new_password
+        user_db.save()
+
     def handle_social_login(self, username, platform, session):
         """
         Logs in social users to their associated accounts, or creates new ones for them
