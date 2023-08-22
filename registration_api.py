@@ -270,6 +270,9 @@ class API:
             return None
 
     def change_username(self, user_id, new_username):
+        if not new_username:
+            return 'Please provide a valid username', 400
+
         # Ensure email is not taken
         if verified.where(usernam=new_username) or unverified.where(username=new_username):  # Hopefully both are empty lists
             return 'That username is already taken.', 401  # Unauthorized
