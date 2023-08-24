@@ -363,8 +363,8 @@ class API:
             self.logout(session)
         # Remove social login ties, if any. Must be done before deleting user data.
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
-        if user_db.has('social_id'):
-            socials.get(user_db.social_platform()).delete(user_db.social_id())
+        for platform in user_db.socials._values:
+            socials.get(platform).delete(user_db.socials.get(platform))
         os.remove(f'db/users/{user_id}.pyn')  # Remove user data file
         verified.delete(user_id)  # Remove user from account map
 
