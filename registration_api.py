@@ -273,8 +273,11 @@ class API:
         if not new_username:
             return 'Please provide a valid username', 400
 
+        if len(new_username) > 32:
+            return 'Your username is too long (>32 characters).', 400
+
         # Ensure email is not taken
-        if verified.where(usernam=new_username) or unverified.where(username=new_username):  # Hopefully both are empty lists
+        if verified.where(username=new_username) or unverified.where(username=new_username):  # Hopefully both are empty lists
             return 'That username is already taken.', 401  # Unauthorized
 
         user_db = Node(f'db/users/{user_id}.pyn', password=ENCRYPTION_KEY)
