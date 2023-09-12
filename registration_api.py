@@ -247,6 +247,10 @@ class API:
         return user_id
 
     def change_email(self, user_id, new_email, require_verification=True):
+        # Ensure email is valid
+        if not is_email(new_email):
+            return 'Please provide a valid email.', 400  # Bad request
+
         # Ensure email is not taken
         if verified.where(email=new_email) or unverified.where(email=new_email):  # Hopefully both are empty lists
             return 'That email is already taken.', 401  # Unauthorized
@@ -275,6 +279,11 @@ class API:
 
         if len(new_username) > 32:
             return 'Your username is too long (>32 characters).', 400
+
+        # Ensure username is valid
+        for char in new_username:
+            if char not in USERNAME_ALLOWED:
+                return 'Usernames may only contain alphanumeric characters, as well as _ and -', 400  # Bad request
 
         # Ensure email is not taken
         if verified.where(username=new_username) or unverified.where(username=new_username):  # Hopefully both are empty lists
